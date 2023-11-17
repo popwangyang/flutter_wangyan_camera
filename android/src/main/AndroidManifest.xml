@@ -11,7 +11,7 @@
     <application>
         <activity
             android:name=".CameraActivity"
-            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"

@@ -31,7 +31,8 @@ class _MyAppState extends State<MyApp> {
         body: Center(
           child: ElevatedButton(
               onPressed: () {
-                FlutterWangyanCamera.pickFromCamera();
+                FlutterWangyanCamera.pickFromCamera(
+                    resolutionPreset: WyResolutionPreset.veryHigh);
               },
               child: const Text("按钮")),
         ),
