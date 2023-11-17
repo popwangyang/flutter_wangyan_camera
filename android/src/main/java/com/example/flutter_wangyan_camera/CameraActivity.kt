@@ -88,7 +88,6 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
-
     private fun showTapView(x: Int, y: Int) {
         val popupWindow =  PopupWindow(
             ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -101,7 +100,6 @@ class CameraActivity : AppCompatActivity() {
         findViewById<PreviewView>(R.id.viewFinder).postDelayed({ popupWindow.dismiss() }, 600)
         findViewById<PreviewView>(R.id.viewFinder).playSoundEffect(SoundEffectConstants.CLICK)
     }
-
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     private fun cameraChange() {
@@ -252,7 +250,7 @@ class CameraActivity : AppCompatActivity() {
                 .setTargetResolution(Size.parseSize(if (resolution != null && resolution != "max"){
                     resolution
                 }else{
-                    "1280x720"
+                    "720x1280"
                 }))
                 .build()
 

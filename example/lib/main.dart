@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
-import 'dart:async';
+import 'dart:io';
 
-import 'package:flutter/services.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_wangyan_camera/flutter_wangyan_camera.dart';
 
 void main() {
@@ -21,6 +20,8 @@ class _MyAppState extends State<MyApp> {
     super.initState();
   }
 
+  File? _file;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -29,12 +30,21 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Plugin example app'),
         ),
         body: Center(
-          child: ElevatedButton(
-              onPressed: () {
-                FlutterWangyanCamera.pickFromCamera(
-                    resolutionPreset: WyResolutionPreset.veryHigh);
-              },
-              child: const Text("按钮")),
+          child: Column(
+            children: [
+              ElevatedButton(
+                  onPressed: () async {
+                    String? path = await FlutterWangyanCamera.pickFromCamera(
+                        resolutionPreset: WyResolutionPreset.veryHigh);
+                    if (path != null) {
+                      _file = File(path);
+                    }
+                    setState(() {});
+                  },
+                  child: const Text("按钮")),
+              _file != null ? Image.file(_file!) : Container()
+            ],
+          ),
         ),
       ),
     );

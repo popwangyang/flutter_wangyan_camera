@@ -12,29 +12,29 @@ class FlutterWangyanCamera {
 
   static Future<String?> pickFromCamera(
       {WyResolutionPreset? resolutionPreset = WyResolutionPreset.high}) async {
-    String resolutionStr = "320x240";
+    String resolutionStr = "240x320";
 
     switch (resolutionPreset) {
       case WyResolutionPreset.low:
-        resolutionStr = "320x240";
+        resolutionStr = "240x320";
         break;
       case WyResolutionPreset.medium:
-        resolutionStr = "720x480";
+        resolutionStr = "480x720";
         break;
       case WyResolutionPreset.high:
-        resolutionStr = "1280x720";
+        resolutionStr = "720x1280";
         break;
       case WyResolutionPreset.veryHigh:
-        resolutionStr = "1920x1080";
+        resolutionStr = "1080x1920";
         break;
       case WyResolutionPreset.ultraHigh:
-        resolutionStr = "3840x2160";
+        resolutionStr = "2160x3840";
         break;
       case WyResolutionPreset.max:
         resolutionStr = "max";
         break;
       default:
-        resolutionStr = "1280x720";
+        resolutionStr = "720x1280";
     }
 
     final String? src = await _channel
