@@ -1,7 +1,7 @@
 package com.example.flutter_wangyan_camera
 
 import android.Manifest
-import android.content.ContentValues
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -9,7 +9,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.util.Size
 import android.view.*
@@ -26,21 +25,75 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
+import kotlin.math.sqrt
 
-
+@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 class CameraActivity : AppCompatActivity() {
     private var imageCapture: ImageCapture? = null
     private var preview: Preview? = null
     private var cameraProvider: ProcessCameraProvider? = null
     private var camera: Camera? = null
     private var isBackCamera: Boolean = true;
-    private lateinit var cameraExecutor: ExecutorService
     private lateinit var flashImage: ImageButton;
-    private var scaleDetector: ScaleGestureDetector? = null
     private var resolution: String? = null;
+    private lateinit var gestureDetector: GestureDetector
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    private val onGestureListener = object: GestureDetector.OnGestureListener{
+        var currentDistance = 0.0
+        var lastDistance = 0.0
+        override fun onDown(p0: MotionEvent?): Boolean {
+            Log.d(TAG, "onDown: 按下");
+            return true;
+        }
+
+        override fun onShowPress(p0: MotionEvent?) {
+            Log.d(TAG, "onShowPress: 按下");
+        }
+
+        override fun onSingleTapUp(event: MotionEvent?): Boolean {
+            Log.d(TAG, "onSingleTapUp: 按下");
+            if (event != null) {
+                focusCamera(event)
+            }
+            return true;
+        }
+
+        override fun onScroll(e1: MotionEvent, e2: MotionEvent, p2: Float, p3: Float): Boolean {
+            if (e2.pointerCount >= 2) {
+                val offSetX: Float = e2.getX(0) - e2.getX(1)
+                val offSetY: Float = e2.getY(0) - e2.getY(1)
+                currentDistance =
+                    sqrt((offSetX * offSetX + offSetY * offSetY).toDouble())
+                if (lastDistance == .0) {
+                    lastDistance = currentDistance
+                }else{
+                    if (currentDistance - lastDistance > 10.0) {
+                        Log.d(TAG, "放大")
+                        zoom(0.2.toFloat());
+                    }else if (lastDistance - currentDistance > 10.0) {
+                        Log.d(TAG, "瘦小")
+                        zoom((-0.2).toFloat());
+                    }
+                }
+                lastDistance = currentDistance
+            }
+            return true;
+        }
+
+        override fun onLongPress(p0: MotionEvent?) {
+            Log.d(TAG, "onLongPress: 按下");
+        }
+
+        override fun onFling(p0: MotionEvent?, p1: MotionEvent?, p2: Float, p3: Float): Boolean {
+            Log.d(TAG, "onLongPress: 按下");
+            currentDistance = 0.0;
+            lastDistance = 0.0;
+            return true;
+        }
+
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_camera)
@@ -51,16 +104,15 @@ class CameraActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(
                 this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
+        gestureDetector = GestureDetector(this, onGestureListener)
         flashImage = findViewById<ImageButton>(R.id.flash_btn)
         flashImage.setOnClickListener { cameraFlashChange() }
         findViewById<Button>(R.id.image_capture_button).setOnClickListener { takePhoto() }
         findViewById<ImageButton>(R.id.camera_change).setOnClickListener { cameraChange() }
         findViewById<ImageButton>(R.id.back).setOnClickListener { back() }
         findViewById<View>(R.id.root_box).setOnTouchListener { _, event ->
-            focusCamera(event)
-            false
+            gestureDetector.onTouchEvent(event)
         }
-        cameraExecutor = Executors.newSingleThreadExecutor()
         resolution = intent.getStringExtra("resolution")
         window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
     }
@@ -79,12 +131,20 @@ class CameraActivity : AppCompatActivity() {
         camera?.cameraControl?.startFocusAndMetering(action)
     }
 
-     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-     fun zoom(delta: Float) {
+    private fun zoom(delta: Float) {
         val zoomState = camera?.cameraInfo?.zoomState
         zoomState?.value?.let {
             val currentZoomRatio = it.zoomRatio
-            camera?.cameraControl?.setZoomRatio(currentZoomRatio * delta)
+            val maxZoomRatio = it.maxZoomRatio
+            val minZoomRatio = it.minZoomRatio
+            val tempRatio = currentZoomRatio + delta
+            camera?.cameraControl?.setZoomRatio(if (tempRatio > maxZoomRatio){
+                maxZoomRatio
+            }else if (tempRatio < minZoomRatio){
+                minZoomRatio
+            }else{
+                tempRatio
+            })
         }
     }
 
@@ -283,11 +343,6 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        cameraExecutor.shutdown()
-    }
-
     companion object {
         private const val TAG = "CameraXApp"
         private const val FILENAME = "yyyy-MM-dd-HH-mm-ss-SSS"
@@ -296,7 +351,6 @@ class CameraActivity : AppCompatActivity() {
         private val REQUIRED_PERMISSIONS =
             mutableListOf (
                 Manifest.permission.CAMERA,
-                Manifest.permission.RECORD_AUDIO
             ).apply {
                 if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
                     add(Manifest.permission.WRITE_EXTERNAL_STORAGE)

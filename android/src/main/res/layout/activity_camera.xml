@@ -30,7 +30,7 @@
                 android:scaleType="centerCrop"
                 android:src="@drawable/camera_change"
                 android:layout_marginLeft="20dp"
-                />
+                android:contentDescription="camera_change" />
             <View
                 android:layout_width="0dp"
                 android:layout_height="10dp"
