@@ -305,7 +305,7 @@ class CameraActivity : AppCompatActivity() {
                 }
             imageCapture = ImageCapture.Builder()
                 .setCaptureMode(CAPTURE_MODE_MINIMIZE_LATENCY)
-                .setJpegQuality(50)
+                .setJpegQuality(100)
                 .setTargetRotation(Surface.ROTATION_0)
                 .setTargetResolution(Size.parseSize(if (resolution != null && resolution != "max"){
                     resolution

@@ -31,7 +31,7 @@ class FlutterWangyanCamera {
         resolutionStr = "2160x3840";
         break;
       case WyResolutionPreset.max:
-        resolutionStr = "max";
+        resolutionStr = "2160x3840";
         break;
       default:
         resolutionStr = "720x1280";
